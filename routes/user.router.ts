@@ -8,3 +8,6 @@ const route = express.Router();
 route.post('/register', registerUser);
 //api/user/activate-account
 route.post('/activate-account', activateUser);
+
+
+export default route;
