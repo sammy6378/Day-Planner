@@ -1,5 +1,5 @@
 import express from 'express';
-import { activateUser, registerUser } from '../controllers/user.controller';
+import { activateUser, loginUser, registerUser } from '../controllers/user.controller';
 
 const route = express.Router();
 
@@ -8,6 +8,8 @@ const route = express.Router();
 route.post('/register', registerUser);
 //api/user/activate-account
 route.post('/activate-account', activateUser);
+// api/user/login
+route.post('/login', loginUser);
 
 
 export default route;
