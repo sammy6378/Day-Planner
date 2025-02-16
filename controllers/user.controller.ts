@@ -5,6 +5,8 @@ import validator from 'validator';
 import { IUser, userModel } from "../models/userModel";
 import jwt from 'jsonwebtoken';
 import { sendMail } from "../utils/mail";
+import { sendToken } from "../utils/jwt";
+import { redis } from "../utils/redis";
 
 interface IRegisterUser {
     name: string;
@@ -121,3 +123,64 @@ export const activateUser = catchAsyncErrors(async(req: Request, res: Response, 
         return next(new ErrorHandler(error.message, 500));  
     }
 });
+
+
+// login user 
+export const loginUser = catchAsyncErrors(async(req: Request, res: Response, next:NextFunction)=>{
+    try {
+        const { email, password } = req.body as {email: string, password: string};
+
+        if(!email || !password){
+            return next(new ErrorHandler('Please enter email and password', 400));
+        }
+
+        const user = await userModel.findOne({email});
+        if(!user){
+            return next(new ErrorHandler('Invalid Email or Password', 400));
+        }
+
+        const isPasswordMatch = await user.comparePasswords(password);
+        if(!isPasswordMatch){
+            return next(new ErrorHandler('Invalid Email or Password', 400));
+        }
+
+        // create cookies
+        try {
+            await sendToken(user, res);
+        } catch (error:any) {
+            return next(new ErrorHandler(error.message, 500));
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Logged in successfully',
+            user,
+        });
+
+    } catch (error:any) {
+        return next(new ErrorHandler(error.message, 500));  
+    }
+})
+
+
+//logout user
+export const logoutUser = catchAsyncErrors(
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        res.cookie("access_token", "", { maxAge: 1 });
+        res.cookie("refresh_token", "", { maxAge: 1 });
+  
+        const redisUser = req.user?._id as string;
+        if (redisUser) {
+          console.log("User session deleted from redis");
+          await redis.del(redisUser);
+        } else {
+          console.log(`user: ${redisUser} not found in redis`);
+        }
+  
+        res.status(200).json({ success: true, message: "User logged out" });
+      } catch (error: any) {
+        return next(new ErrorHandler(error.message, 400));
+      }
+    }
+  );
