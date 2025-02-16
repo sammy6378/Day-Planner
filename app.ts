@@ -16,7 +16,7 @@ app.use(cors());
 app.use(cookieParser());
 
 // Routes
-app.use('/api', useRouter);
+app.use('/api/user', useRouter);
 
 // server
 app.get('/test', (req: Request, res: Response, next: NextFunction)=>{
