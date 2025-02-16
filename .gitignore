@@ -1,0 +1,18 @@
+
+# folders
+bin/
+obj/
+node_modules/
+bower_components/
+dist/
+
+
+# files
+*.suo
+*.user
+*.sln.docstates
+*.suo
+.env
+.DS_Store
+*.log
+*.log.*
